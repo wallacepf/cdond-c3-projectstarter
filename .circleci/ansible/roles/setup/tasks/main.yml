@@ -1,0 +1,40 @@
+---
+  - name: Update apt cache
+    become: yes
+    apt:
+      update_cache: yes
+
+  - name: Upgrade apt
+    become: yes
+    apt:
+      upgrade: yes
+
+  - name: Install Packages
+    become: yes
+    apt:
+      pkg:
+        - nodejs
+        - npm
+        - build-essentials
+        - git
+        - curl
+        - openssl
+        - libssl-dev
+  
+  - name: Install pm2
+    become: yes
+    npm:
+      name: pm2
+      global: yes
+  
+  - name: add a user to run the app
+    user:
+      name: appuser
+      home: /home/appuser
+      password: appuser
+
+  - name: add appuser to sudo
+    become: yes
+    shell: |
+      usermod -aG sudo appuser
+  

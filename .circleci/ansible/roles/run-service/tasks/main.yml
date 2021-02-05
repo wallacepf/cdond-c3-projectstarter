@@ -1,0 +1,7 @@
+---
+  - name: Run service
+    become: yes
+    become_user: appuser
+    shell: |
+      cd /home/appuser/cdond-c3-projectstarter/backend
+      pm2 start src/main.ts

@@ -4,14 +4,17 @@ commands:
   destroy-environment:
     description: Destroy back-end and front-end cloudformation stacks given a workflow ID.
     parameters:
-      # Add parameter here   
+      wkfl_id:
+        type: string
     steps:
       - run:
           name: Destroy environments
           when: on_fail
           command: |
-            # Your code here
-            exit 1
+            aws cloudformation delete-stack \
+              --stack-name frontend-<< parameters.wkfl_id >>
+            aws cloudformation delete-stack \
+              --stack-name backend-<< parameters.wkfl_id >>
 
   revert-migrations:
     description: Revert the last migration if successfully run in the current workflow.
@@ -20,15 +23,14 @@ commands:
     steps:
       - run:
           name: Revert migrations
-          # Add when this will run
+          when: on_fail
           command: |
-            # Curl command here to see if there was a successful migration associated with the workflow id, store result in SUCCESS variable
-            SUCCESS = 1
-            if(( $SUCCESS==1 )); 
+            SUCCESS = $(curl -H "token: cdond-c3-projectstarter" --request GET https://api.memstash.io/values/output)
+            if (( $SUCCESS != 1 )) ; 
             then
-            #  cd ~/project/backend
-            #  npm install
-            #  Add revert code here. You can find this in the Getting Started section.
+              cd ~/project/backend
+              npm i
+              npm run migrations:revert
               exit 1
             fi
             
@@ -43,8 +45,10 @@ jobs:
       - run:
           name: Build front-end
           command: |
-            # Your code here
-            exit 1
+            cd frontend
+            npm i 
+            npm run lint
+            npm run build
       - save_cache:
           paths: [frontend/node_modules]
           key: frontend-build
@@ -59,112 +63,152 @@ jobs:
       - run:
           name: Back-end build
           command: |
-             # Your code here
-             exit 1
+            cd backend
+            npm i
+            npm run lint
+            npm run build
       - save_cache:
           paths: [backend/node_modules]
           key: backend-build
 
   test-frontend:
     docker:
-      # Docker image here
+      - image: circleci/node:13.8.0
     steps:
-      # Checkout code from git
-      # Restore from cache
-      # Your job code here
+      - checkout
+      - restore_cache:
+          keys: [frontend-build]
+      - run:
+          name: test-frontend
+          command: |
+            cd frontend
+            npm run test
                 
   test-backend:
     docker:
-      # Docker image here
+      - image: circleci/node:13.8.0
     steps:
-      # Checkout code from git
-      # Restore from cache
-      # Your job code here
+      - checkout
+      - restore_cache:
+          keys: [backend-build]
+      - run:
+          name: test-backend
+          command: |
+            cd backend
+            npm run test
             
   scan-frontend:
     docker:
-      # Docker image here
+      - image: circleci/node:13.8.0
     steps:
-      # Checkout code from git
-      # Restore from cache
-      # Your job code here
+      - checkout
+      - restore_cache:
+          keys: [frontend-build]
+      - run:
+          name: scan-frontend
+          command: |
+            cd frontend
+            npm audit --audit-level=critical
 
   scan-backend:
     docker:
-      # Docker image here
+      - image: circleci/node:13.8.0
     steps:
-      # Checkout code from git
-      # Restore from cache
-      # Your job code here
+      - checkout
+      - restore_cache:
+          keys: [backend-build]
+      - run:
+          name: scan-backend
+          command: |
+            cd backend
+            npm audit --audit-level=critical
 
   deploy-infrastructure:
     docker:
-      # Docker image here that supports AWS CLI
+      - image: amazon/aws-cli
     steps:
-      # Checkout code from git
+      - checkout
       - run:
           name: Ensure back-end infrastructure exists
           command: |
             aws cloudformation deploy \
               --template-file .circleci/files/backend.yml \
-              #--tags project=your-tag \
-              # --stack-name "your back-end stack name with workflow id" \
-              # --parameter-overrides ID="your workflow id"  
-              exit 1
+              --tags Key=project=,Value=udcty_be_dply \
+              --stack-name "backend-${CIRCLE_WORKFLOW_ID:0:7}" \
+              --parameter-overrides ID="6j0k5mvhp6"  
+
+            ec2publicip=$(aws ec2 describe-instances --filters Name=tag-value,Values=backend-6j0k5mvhp6 \
+              --query 'Reservations[*].Instances[*].PublicDnsName' \
+              --output text)
+
+            curl -H "Content-Type: text/plain" -H "token: 142c2147-cc5d-42a8-895e-662a477d03da" \
+              --request PUT \
+              --data "${ec2publicip}" https://api.memstash.io/values/ec2publicip
       - run:
           name: Ensure front-end infrastructure exist
           command: |
             aws cloudformation deploy \
               --template-file .circleci/files/frontend.yml \
-              #--tags project=your-tag \
-              # --stack-name "your front-end stack name with workflow id" \
-              # --parameter-overrides ID="your workflow id"  
-              exit 1
+              --tags Key=project,Value=udcty_fe_dply \
+              --stack-name "frontend-${CIRCLE_WORKFLOW_ID:0:7}" \
+              --parameter-overrides ID="6j0k5mvhp6" \  
+            
       - run:
           name: Add back-end ip to ansible inventory
           command: |
-            # Your code here
-            exit 1
+            curl -H "token: 142c2147-cc5d-42a8-895e-662a477d03da" \
+              --request GET https://api.memstash.io/values/ec2publicip >> .circleci/ansible/inventory.txt
       - persist_to_workspace:
           root: ~/
           paths:
             - project/.circleci/ansible/inventory.txt
-      # Here's where you will add some code to rollback on failure      
+      - destroy_environment:
+          wrkflw_id: $CIRCLE_WORKFLOW_ID:0:7    
 
   configure-infrastructure:
     docker:
-      # Docker image here that supports Ansible
+      - image: python:3.8.7
     steps:
-      # Checkout code from git
-      # Add ssh keys with fingerprint
-      # attach workspace
+      - checkout
+      - add_ssh_keys:
+          fingerprints:
+            - "ed:2d:cf:6b:b4:8d:26:f7:72:63:a9:dd:75:09:26:dd"
+      - attach_workspace:
+          at: project/.circleci/ansible/
       - run:
           name: Install dependencies
           command: |
-            # Your code here
-            exit 1
+            pip install ansible
+
       - run:
           name: Configure server
           command: |
-            # Your code here
-            exit 1
-      # Here's where you will add some code to rollback on failure      
+            cd .circleci/ansible
+            ansible-playbook configure-server.yml -i project/.circleci/ansible/inventory.txt 
+      - destroy_environment:
+          wrkflw_id: $CIRCLE_WORKFLOW_ID:0:7      
 
   run-migrations:
     docker:
-      # Docker image here that supports NodeJS
+      - image: circleci/node:13.8.0
     steps:
-      # Checkout code from git
+      - checkout
       - run:
           name: Run migrations
           command: |
-            # Your code here
-            exit 1
+            cd backend
+            npm i
+            npm run migrations >> migrations_result.txt
       - run:
           name: Send migration results to memstash
           command: |
-            # Your code here
-            exit 1
+            cd backend
+            if [[ $(cat mytest.txt |grep "has been executed successfully") == *success* ]]
+            then
+              curl -H "Content-Type: text/plain" -H "token: migration_${CIRCLE_WORKFLOW_ID}" \
+                --request PUT --data "1" https://api.memstash.io/values/output
+            else
+              exit 1
      # Here's where you will add some code to rollback on failure      
 
   deploy-frontend:
