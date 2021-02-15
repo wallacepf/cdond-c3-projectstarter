@@ -136,11 +136,11 @@ jobs:
           command: |
             aws cloudformation deploy \
               --template-file .circleci/files/backend.yml \
-              --tags Key=project=,Value=udcty_be_dply \
+              --tags Key=Project,Value=udcty_be_dply \
               --stack-name "backend-${CIRCLE_WORKFLOW_ID:0:7}" \
               --parameter-overrides ID=${CIRCLE_WORKFLOW_ID:0:7}  
 
-            ec2publicip=$(aws ec2 describe-instances --filters Name=tag-value,Values=backend-6j0k5mvhp6 \
+            ec2publicip=$(aws ec2 describe-instances --filters Name=tag-value,Values=backend-${CIRCLE_WORKFLOW_ID:0:7} \
               --query 'Reservations[*].Instances[*].PublicDnsName' \
               --output text)
 
@@ -152,9 +152,9 @@ jobs:
           command: |
             aws cloudformation deploy \
               --template-file .circleci/files/frontend.yml \
-              --tags Key=project,Value=udcty_fe_dply \
+              --tags Key=Project,Value=udcty_fe_dply \
               --stack-name "frontend-${CIRCLE_WORKFLOW_ID:0:7}" \
-              --parameter-overrides ID="6j0k5mvhp6" \  
+              --parameter-overrides ID=${CIRCLE_WORKFLOW_ID:0:7} \  
             
       - run:
           name: Add back-end ip to ansible inventory
