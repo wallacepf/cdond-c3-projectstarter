@@ -1,6 +1,4 @@
 version: 2.1
-orbs: 
-  jira: circleci/jira@1.3.1
 
 commands:
   destroy-environment:
@@ -361,60 +359,32 @@ jobs:
 workflows:
   default:
     jobs:
-      - build-frontend:
-          post-steps:
-            - jira/notify
-      - build-backend:
-          post-steps:
-            - jira/notify
+      - build-frontend
+      - build-backend
       - test-frontend:
           requires: [build-frontend]
-          post-steps:
-            - jira/notify
       - test-backend:
           requires: [build-backend]
-          post-steps:
-            - jira/notify
       - scan-backend:
           requires: [build-backend]
-          post-steps:
-            - jira/notify
       - scan-frontend:
           requires: [build-frontend]
-          post-steps:
-            - jira/notify
       - deploy-infrastructure:
           requires: [test-frontend, test-backend, scan-frontend, scan-backend]
           filters:
             branches:
-              only: [main]
-          post-steps:
-            - jira/notify
+              only: [master]
       - configure-infrastructure:
           requires: [deploy-infrastructure]
-          post-steps:
-            - jira/notify
       - run-migrations:
           requires: [configure-infrastructure]
-          post-steps:
-            - jira/notify
       - deploy-frontend:
           requires: [run-migrations]
-          post-steps:
-            - jira/notify
       - deploy-backend:
           requires: [run-migrations]
-          post-steps:
-            - jira/notify
       - smoke-test:
           requires: [deploy-backend, deploy-frontend]
-          post-steps:
-            - jira/notify
       - cloudfront-update:
           requires: [smoke-test]
-          post-steps:
-            - jira/notify
       - cleanup:
           requires: [cloudfront-update]
-          post-steps:
-            - jira/notify
