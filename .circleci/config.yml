@@ -154,7 +154,7 @@ jobs:
               --template-file .circleci/files/frontend.yml \
               --tags Key=Project,Value=udcty_fe_dply \
               --stack-name "frontend-${CIRCLE_WORKFLOW_ID:0:7}" \
-              --parameter-overrides ID=${CIRCLE_WORKFLOW_ID:0:7} \  
+              --parameter-overrides ID=${CIRCLE_WORKFLOW_ID:0:7}  
             
       - run:
           name: Add back-end ip to ansible inventory
