@@ -19,15 +19,3 @@
 
   roles:
     - setup
-    - configure-app-server
-    - deploy
-    - run-service
-      environment:
-        ENVIRONMENT=production
-        TYPEORM_CONNECTION=postgres
-        TYPEORM_ENTITIES=./src/modules/domain/**/*.entity.ts
-        TYPEORM_HOST=prod-db.caqw91sxkq6h.us-west-2.rds.amazonaws.com
-        TYPEORM_PORT=5432
-        TYPEORM_USERNAME=postgres
-        TYPEORM_PASSWORD=udacitypwd
-        TYPEORM_DATABASE=prod-db

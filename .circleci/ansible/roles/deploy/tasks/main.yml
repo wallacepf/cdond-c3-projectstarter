@@ -1,16 +1,8 @@
 ---
-  - name: Clone git repo
+  - name: Copy app files
     become: yes
     become_user: appuser
-    git:
-      repo: https://github.com/wallacepf/cdond-c3-projectstarter.git
-      dest: /home/appuser/cdond-c3-projectstarter
-      clone: yes
-  
-  - name: Build app
-    become: yes
-    become_user: appuser
-    shell: |
-      cd /home/appuser/cdond-c3-projectstarter/backend
-      npm i
-      npm run build
+    copy:
+      src: *
+      dst: ~/app
+

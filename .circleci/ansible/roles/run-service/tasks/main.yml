@@ -3,5 +3,5 @@
     become: yes
     become_user: appuser
     shell: |
-      cd /home/appuser/cdond-c3-projectstarter/backend
+      cd /home/appuser/app
       pm2 start src/main.ts
