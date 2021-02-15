@@ -218,7 +218,9 @@ jobs:
                 --request PUT --data "1" https://api.memstash.io/values/output
             else
               exit 1
-      - revert-migrations  
+      - revert-migrations
+      - destroy-environment:
+          wkfl_id: ${CIRCLE_WORKFLOW_ID:0:7}     
 
   deploy-frontend:
     docker:
