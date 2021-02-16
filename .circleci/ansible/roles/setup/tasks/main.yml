@@ -15,7 +15,7 @@
       pkg:
         - nodejs
         - npm
-        - build-essentials
+        - build-essential
         - git
         - curl
         - openssl

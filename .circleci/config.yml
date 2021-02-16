@@ -11,6 +11,7 @@ commands:
           name: Destroy environments
           when: on_fail
           command: |
+            sleep 10
             aws cloudformation delete-stack \
               --stack-name backend-<< parameters.wkfl_id >>
             aws s3 rm s3://udapeople-<< parameters.wkfl_id >> --recursive
