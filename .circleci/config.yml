@@ -239,14 +239,17 @@ jobs:
 
   deploy-frontend:
     docker:
-      - image: amazon/aws-cli
+      - image: cimg/python:3.8.7-node
     steps:
       - checkout
       - run:
           name: Install dependencies
           command: |
-            yum update
-            yum install npm -y
+            sudo apt-get update
+            sudo apt-get install less -y
+            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.0.30.zip" -o "awscliv2.zip"
+            unzip awscliv2.zip
+            sudo ./aws/install
       - run:
           name: Get backend url
           command: |
@@ -279,14 +282,12 @@ jobs:
       - run:
           name: Install dependencies
           command: |
-            pip install ansible
-            apt-get update
-            apt-get install less -y
-            apt-get install zip -y
-            apt-get install less -y
+            sudo pip install ansible
+            sudo apt-get update
+            sudo apt-get install less zip -y
             curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.0.30.zip" -o "awscliv2.zip"
             unzip awscliv2.zip
-            ./aws/install
+            sudo ./aws/install
       - run:
           name: Deploy backend
           command: |
@@ -308,9 +309,11 @@ jobs:
       - run:
           name: Install dependencies
           command: |
-            apt-get update
-            apt-get install less -y
-            apt-get install curl -y
+            sudo apt-get update
+            sudo apt-get install less curl -y
+            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.0.30.zip" -o "awscliv2.zip"
+            unzip awscliv2.zip
+            sudo ./aws/install
       - run:
           name: Get backend url
           command: |
