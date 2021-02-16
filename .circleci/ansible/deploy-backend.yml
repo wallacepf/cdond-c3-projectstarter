@@ -19,4 +19,4 @@
         TYPEORM_PORT=5432
         TYPEORM_USERNAME=postgres
         TYPEORM_PASSWORD=udacitypwd
-        TYPEORM_DATABASE=prod-db
+        TYPEORM_DATABASE=prod_db
