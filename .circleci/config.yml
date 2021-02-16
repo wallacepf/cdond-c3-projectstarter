@@ -196,9 +196,7 @@ jobs:
           name: Configure server
           command: |
             cd .circleci/ansible
-            ls -l /tmp/ansible
-            cat /tmp/ansible/inventory.txt
-            ansible-playbook configure-server.yml -i project/.circleci/ansible/inventory.txt 
+            ansible-playbook configure-server.yml -i /tmp/ansible/inventory.txt
       - destroy-environment:
           wkfl_id: ${CIRCLE_WORKFLOW_ID:0:7}        
 
@@ -213,6 +211,7 @@ jobs:
             sudo apt-get update
             sudo apt-get install zip -y
             sudo apt-get install curl -y 
+            sudo apt-get install less -y
             curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.0.30.zip" -o "awscliv2.zip"
             unzip awscliv2.zip
             sudo ./aws/install
@@ -245,11 +244,12 @@ jobs:
       - run:
           name: Install dependencies
           command: |
-            npm i
+            yum update
+            yum install npm -y
       - run:
           name: Get backend url
           command: |
-            BACKEND_IP = $(curl -H "token: 142c2147-cc5d-42a8-895e-662a477d03da" \
+            BACKEND_IP=$(curl -H "token: 142c2147-cc5d-42a8-895e-662a477d03da" \
               --request GET https://api.memstash.io/values/ec2publicip)
             export API_URL="http://${BACKEND_IP}:3030"
             echo "${API_URL}"
@@ -257,6 +257,7 @@ jobs:
           name: Deploy frontend objects
           command: |
             cd frontend
+            npm i
             npm run build
             aws s3 cp .dist/ s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7}
       - destroy-environment:
@@ -273,11 +274,18 @@ jobs:
           fingerprints:
             - "ed:2d:cf:6b:b4:8d:26:f7:72:63:a9:dd:75:09:26:dd"
       - attach_workspace:
-          at: project/.circleci/ansible/
+          at: /tmp/ansible
       - run:
           name: Install dependencies
           command: |
             pip install ansible
+            apt-get update
+            apt-get install less -y
+            apt-get install zip -y
+            apt-get install less -y
+            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.0.30.zip" -o "awscliv2.zip"
+            unzip awscliv2.zip
+            ./aws/install
       - run:
           name: Deploy backend
           command: |
@@ -286,7 +294,7 @@ jobs:
             npm run build
             cp dist/* ../.circleci/ansible/rules/deploy/files
             cd ../.circleci/ansible
-            ansible-playbook -i inventory.txt deploy-backend.yml
+            ansible-playbook -i /tmp/ansible/inventory.txt deploy-backend.yml
       - destroy-environment:
           wkfl_id: ${CIRCLE_WORKFLOW_ID:0:7}  
       - revert-migrations   
@@ -297,9 +305,15 @@ jobs:
     steps:
       - checkout
       - run:
+          name: Install dependencies
+          command: |
+            apt-get update
+            apt-get install less -y
+            apt-get install curl -y
+      - run:
           name: Get backend url
           command: |
-            BACKEND_IP = $(curl -H "token: 142c2147-cc5d-42a8-895e-662a477d03da" \
+            BACKEND_IP=$(curl -H "token: 142c2147-cc5d-42a8-895e-662a477d03da" \
               --request GET https://api.memstash.io/values/ec2publicip)
             export API_URL="http://${BACKEND_IP}:3030/api/status"
       - run:
@@ -311,6 +325,7 @@ jobs:
             else
               echo "Error"
               exit 1
+            fi
       - run:
           name: Frontend smoke test.
           command: |
@@ -335,7 +350,8 @@ jobs:
       - run:
           name: Install dependencies
           command: |
-            # your code here
+            yum update
+            yum install npm -y
       - run:
           name: Update cloudfront distribution
           command: |
