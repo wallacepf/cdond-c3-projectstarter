@@ -166,11 +166,10 @@ jobs:
           command: |
             curl -H "token: 142c2147-cc5d-42a8-895e-662a477d03da" \
               --request GET https://api.memstash.io/values/ec2publicip >> .circleci/ansible/inventory.txt
-            cat .circleci/ansible/inventory.txt
       - persist_to_workspace:
-          root: .
+          root: .circleci/ansible
           paths:
-            - .circleci/ansible/inventory.txt
+            - inventory.txt
       - destroy-environment:
           wkfl_id: ${CIRCLE_WORKFLOW_ID:0:7}    
 
