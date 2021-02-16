@@ -167,9 +167,9 @@ jobs:
             curl -H "token: 142c2147-cc5d-42a8-895e-662a477d03da" \
               --request GET https://api.memstash.io/values/ec2publicip >> .circleci/ansible/inventory.txt
       - persist_to_workspace:
-          root: ~/
+          root: .
           paths:
-            - project/.circleci/ansible/inventory.txt
+            - .circleci/ansible/inventory.txt
       - destroy-environment:
           wkfl_id: ${CIRCLE_WORKFLOW_ID:0:7}    
 
@@ -182,19 +182,20 @@ jobs:
           fingerprints:
             - "ed:2d:cf:6b:b4:8d:26:f7:72:63:a9:dd:75:09:26:dd"
       - attach_workspace:
-          at: project/.circleci/ansible/
+          at: /tmp/ansible/
       - run:
           name: Install dependencies
           command: |
             pip install ansible
-
+            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.0.30.zip" -o "awscliv2.zip"
+            unzip awscliv2.zip
+            sudo ./aws/install
       - run:
           name: Configure server
           command: |
             cd .circleci/ansible
-            ls -l
-            pwd
-            cat inventory.txt
+            ls -l /tmp
+            cat /tmp/ansible/inventory.txt
             ansible-playbook configure-server.yml -i project/.circleci/ansible/inventory.txt 
       - destroy-environment:
           wkfl_id: ${CIRCLE_WORKFLOW_ID:0:7}        
