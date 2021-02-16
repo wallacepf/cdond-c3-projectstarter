@@ -166,6 +166,7 @@ jobs:
           command: |
             curl -H "token: 142c2147-cc5d-42a8-895e-662a477d03da" \
               --request GET https://api.memstash.io/values/ec2publicip >> .circleci/ansible/inventory.txt
+            cat .circleci/ansible/inventory.txt
       - persist_to_workspace:
           root: .
           paths:
@@ -187,6 +188,7 @@ jobs:
           name: Install dependencies
           command: |
             pip install ansible
+            apt-get install less -y
             curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.0.30.zip" -o "awscliv2.zip"
             unzip awscliv2.zip
             ./aws/install
@@ -194,7 +196,7 @@ jobs:
           name: Configure server
           command: |
             cd .circleci/ansible
-            ls -l /tmp
+            ls -l /tmp/ansible
             cat /tmp/ansible/inventory.txt
             ansible-playbook configure-server.yml -i project/.circleci/ansible/inventory.txt 
       - destroy-environment:
