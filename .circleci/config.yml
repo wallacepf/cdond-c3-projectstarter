@@ -203,16 +203,14 @@ jobs:
 
   run-migrations:
     docker:
-      - image: circleci/node:13.8.0
+      - image: cimg/python:3.8.7-node
     steps:
       - checkout
       - run:
           name: Install dependencies
           command: |
             sudo apt-get update
-            sudo apt-get install zip -y
-            sudo apt-get install curl -y 
-            sudo apt-get install less -y
+            sudo apt-get install zip curl less -y
             curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.0.30.zip" -o "awscliv2.zip"
             unzip awscliv2.zip
             sudo ./aws/install
@@ -263,7 +261,8 @@ jobs:
             cd frontend
             npm i
             npm run build
-            aws s3 cp .dist/ s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7}
+            ls -l
+            aws s3 cp dist/* s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7}
       - destroy-environment:
           wkfl_id: ${CIRCLE_WORKFLOW_ID:0:7}  
       - revert-migrations   
