@@ -224,8 +224,8 @@ jobs:
           name: Send migration results to memstash
           command: |
             cd backend
-            cat migrations_result.txt
-            if [[ $(cat migrations_result.txt |grep "has been executed successfully") == *success* ]]
+            cat migrations_result.txt| grep "has been executed successfully"
+            if [ $(cat migrations_result.txt |grep "has been executed successfully") == *success* ]
             then
               curl -H "Content-Type: text/plain" -H "token: migration_${CIRCLE_WORKFLOW_ID:0:7}" \
                 --request PUT --data "1" https://api.memstash.io/values/output
