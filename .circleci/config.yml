@@ -26,7 +26,7 @@ commands:
           when: on_fail
           command: |
             SUCCESS=$(curl -H "token: migration_${CIRCLE_WORKFLOW_ID:0:7}" --request GET https://api.memstash.io/values/output)
-            if [ $SUCCESS != 1 ] 
+            if [ $SUCCESS != "1" ] 
             then
               cd backend
               npm i
@@ -219,17 +219,19 @@ jobs:
           command: |
             cd backend
             npm i 
-            npm run migrations | tee migrations_result.txt
+            npm run migrations > migrations_result.txt
+            cat migrations_result.txt | grep "has been executed successfully"
       - run:
           name: Send migration results to memstash
           command: |
             cd backend
             cat migrations_result.txt| grep "has been executed successfully"
-            if [ $(cat migrations_result.txt |grep "has been executed successfully") == *success* ]
+            if [ $(cat migrations_result.txt | grep "has been executed successfully") == *success* ]
             then
               curl -H "Content-Type: text/plain" -H "token: migration_${CIRCLE_WORKFLOW_ID:0:7}" \
                 --request PUT --data "1" https://api.memstash.io/values/output
             else
+              echo "Success word not found"
               exit 1
             fi
       - destroy-environment:
