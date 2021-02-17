@@ -221,13 +221,11 @@ jobs:
           command: |
             cd backend
             npm i
-            npm run migrations >> migrations_result.txt
+            npm run migrations | tee migrations_result.txt
       - run:
           name: Send migration results to memstash
           command: |
             cd backend
-            pwd
-            ls -l
             tail migrations_result.txt
             if [[ $(cat migrations_result.txt |grep "has been executed successfully") == *success* ]]
             then
