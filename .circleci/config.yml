@@ -220,8 +220,7 @@ jobs:
           name: Run migrations
           command: |
             cd backend
-            npm i
-            npm run migrations | tee migrations_result.txt
+            npm run migrations
       - run:
           name: Send migration results to memstash
           command: |
