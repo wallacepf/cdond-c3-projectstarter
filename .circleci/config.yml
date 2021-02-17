@@ -28,11 +28,9 @@ commands:
             SUCCESS=$(curl -H "token: migration_${CIRCLE_WORKFLOW_ID:0:7}" --request GET https://api.memstash.io/values/output)
             if [ $SUCCESS != 1 ] 
             then
-              cd ~/project/backend
+              cd backend
               npm i
               npm run migrations:revert
-            else
-              exit 1
             fi
             
 jobs:
@@ -221,12 +219,12 @@ jobs:
           command: |
             cd backend
             npm i 
-            npm run migrations
+            npm run migrations | tee migrations_result.txt
       - run:
           name: Send migration results to memstash
           command: |
             cd backend
-            tail migrations_result.txt
+            cat migrations_result.txt
             if [[ $(cat migrations_result.txt |grep "has been executed successfully") == *success* ]]
             then
               curl -H "Content-Type: text/plain" -H "token: migration_${CIRCLE_WORKFLOW_ID:0:7}" \
@@ -234,9 +232,9 @@ jobs:
             else
               exit 1
             fi
-      - revert-migrations
       - destroy-environment:
           wkfl_id: ${CIRCLE_WORKFLOW_ID:0:7}     
+      - revert-migrations
 
   deploy-frontend:
     docker:
