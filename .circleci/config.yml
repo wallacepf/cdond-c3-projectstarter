@@ -25,12 +25,14 @@ commands:
           name: Revert migrations
           when: on_fail
           command: |
-            SUCCESS=$(curl -H "token: migration_${CIRCLE_WORKFLOW_ID}" --request GET https://api.memstash.io/values/output)
+            SUCCESS=$(curl -H "token: migration_${CIRCLE_WORKFLOW_ID:0:7}" --request GET https://api.memstash.io/values/output)
             if [ $SUCCESS != 1 ] 
             then
               cd ~/project/backend
               npm i
               npm run migrations:revert
+            else
+              exit 1
             fi
             
 jobs:
@@ -226,7 +228,7 @@ jobs:
             cd backend
             if [[ $(cat migrations_result.txt |grep "has been executed successfully") == *success* ]]
             then
-              curl -H "Content-Type: text/plain" -H "token: migration_${CIRCLE_WORKFLOW_ID}" \
+              curl -H "Content-Type: text/plain" -H "token: migration_${CIRCLE_WORKFLOW_ID:0:7}" \
                 --request PUT --data "1" https://api.memstash.io/values/output
             else
               exit 1
