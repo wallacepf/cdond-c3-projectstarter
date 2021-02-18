@@ -218,8 +218,7 @@ jobs:
           name: Run migrations
           command: |
             cd backend
-            npm i 
-            npm run migrations > migrations_result.txt
+            npm i && npm run migrations > migrations_result.txt
             cat migrations_result.txt | grep "has been executed successfully"
       - run:
           name: Send migration results to memstash
@@ -262,8 +261,7 @@ jobs:
           name: Deploy frontend objects
           command: |
             cd frontend
-            npm i
-            npm run build
+            npm i && npm run build
             ls -l
             aws s3 cp dist/* s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7}
       - destroy-environment:
@@ -293,9 +291,8 @@ jobs:
       - run:
           name: Deploy backend
           command: |
-            npm i
             cd backend
-            npm run build
+            npm i && npm run build
             cp dist/* ../.circleci/ansible/rules/deploy/files
             cd ../.circleci/ansible
             ansible-playbook -i /tmp/ansible/inventory.txt deploy-backend.yml
