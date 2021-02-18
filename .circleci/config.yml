@@ -72,7 +72,6 @@ jobs:
           paths: 
             - backend/node_modules
             - backend/dist
-            - backend/package-lock.json
           key: backend-build-v1
 
   test-frontend:
