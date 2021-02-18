@@ -203,7 +203,7 @@ jobs:
 
   run-migrations:
     docker:
-      - image: cimg/python:3.8.7-node
+      - image: circleci/node:13.8.0
     steps:
       - checkout
       - run:
@@ -214,11 +214,13 @@ jobs:
             curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.0.30.zip" -o "awscliv2.zip"
             unzip awscliv2.zip
             sudo ./aws/install
+            cd backend
+            npm i 
       - run:
           name: Run migrations
           command: |
             cd backend
-            npm i && npm run migrations > migrations_result.txt
+            npm run migrations > migrations_result.txt
             cat migrations_result.txt | grep "has been executed successfully"
       - run:
           name: Send migration results to memstash
