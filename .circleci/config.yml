@@ -263,9 +263,9 @@ jobs:
           name: Deploy frontend objects
           command: |
             cd frontend
-            npm i && npm run build
-            ls -l
-            aws s3 cp dist/* s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7}
+            npm i
+            npm run build
+            aws s3 sync ./dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive
       - destroy-environment:
           wkfl_id: ${CIRCLE_WORKFLOW_ID:0:7}  
       - revert-migrations   
@@ -284,7 +284,7 @@ jobs:
       - run:
           name: Install dependencies
           command: |
-            sudo pip install ansible
+            pip install ansible
             sudo apt-get update
             sudo apt-get install less zip -y
             curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.0.30.zip" -o "awscliv2.zip"
@@ -295,7 +295,7 @@ jobs:
           command: |
             cd backend
             npm i && npm run build
-            cp dist/* ../.circleci/ansible/rules/deploy/files
+            cp -R dist/* ../.circleci/ansible/rules/deploy/files
             cd ../.circleci/ansible
             ansible-playbook -i /tmp/ansible/inventory.txt deploy-backend.yml
       - destroy-environment:
